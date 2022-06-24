@@ -1,0 +1,28 @@
+/*
+ * @Author: Kanata You 
+ * @Date: 2022-06-24 23:54:26 
+ * @Last Modified by: Kanata You
+ * @Last Modified time: 2022-06-25 01:07:01
+ */
+
+@keyframes stretch-ns {
+  from {
+    /* transform: scaleY(0); */
+    max-height: 0;
+  }
+  to {
+    /* transform: scaleY(1); */
+    max-height: 100vh;
+  }
+}
+
+@keyframes stretch-ew {
+  from {
+    /* transform: scaleX(0); */
+    max-width: 0;
+  }
+  to {
+    /* transform: scaleX(1); */
+    max-width: 100vw;
+  }
+}
