@@ -97,5 +97,6 @@
     "@colors": "./src/colors/",
     "@utils": "./src/utils/",
     "@public": "./public/"
-  }
+  },
+  "espoirPackage": "module"
 }

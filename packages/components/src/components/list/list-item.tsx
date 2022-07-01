@@ -18,8 +18,8 @@ import { ListItemContainer, ListItemProps } from '.';
 
 const ListItemElement = styled.div<{ isDragging: boolean }>(({ isDragging }) => ({
   position: isDragging ? 'fixed' : 'relative',
-  paddingBlock: '2em',
-  paddingInline: '2em',
+  paddingBlock: '32px',
+  paddingInline: '32px',
   border: `1px solid ${colors.border}`,
   backgroundColor: colors.background,
   boxShadow: isDragging
@@ -28,9 +28,8 @@ const ListItemElement = styled.div<{ isDragging: boolean }>(({ isDragging }) => 
   opacity: isDragging ? 0.75 : 1,
   userSelect: isDragging ? 'none' : undefined,
   pointerEvents: isDragging ? 'none' : undefined,
-  transformOrigin: '100% 100%',
   zIndex: isDragging ? 3 : 1,
-  transition: 'box-shadow 200ms, opacity 200ms, transform 200ms',
+  transition: 'box-shadow 200ms, opacity 200ms, filter 200ms',
 }));
 
 const ListItemElementShadow = styled.div({
@@ -39,14 +38,6 @@ const ListItemElementShadow = styled.div({
   boxShadow: 'inset 1px 2px 4px 3px #0000008a',
   opacity: 0.4,
 });
-
-const ListItemElementDropArea = styled.div<{ direction: 'column' | 'row' }>(({ direction }) => ({
-  position: 'relative',
-  backgroundColor: `${colors.shadow}0a`,
-  boxShadow: 'inset 1px 2px 4px 3px #888888aa',
-  overflow: 'visible',
-  animation: `stretch-${direction === 'column' ? 'ns' : 'ew'} 1500ms`,
-}));
 
 const ListItemElementDroppableBox = styled.div({
   position: 'absolute',
@@ -82,7 +73,7 @@ const _ListItem: React.FC<ListItemProps & LongTouchable> = React.memo(function L
   dropReady,
   canReplace,
   children,
-  // ...props
+  ...props
 }) {
   const ref = React.useRef<HTMLDivElement>();
 
@@ -119,12 +110,12 @@ const _ListItem: React.FC<ListItemProps & LongTouchable> = React.memo(function L
     return () => {};
   }, [dragging, onDragCancel]);
 
-  // const {
-  //   handleMouseDown,
-  //   handleTouchStart,
-  //   handleMouseMove,
-  //   handleTouchMove,
-  // } = useLongTouchHandlers(props);
+  const {
+    handleMouseDown,
+    handleTouchStart,
+    handleMouseMove,
+    handleTouchMove,
+  } = useLongTouchHandlers(props);
   
   return (
     <ListItemContainer>
@@ -134,30 +125,10 @@ const _ListItem: React.FC<ListItemProps & LongTouchable> = React.memo(function L
             onMouseOver={onCanDropOut}
             onTouchMove={onCanDropOut}
             style={{
-              width: bcrRef.current[2],
-              height: bcrRef.current[3],
+              width: active[2],
+              height: active[3],
             }}
           />
-        )
-      }
-      {
-        canReplace && (
-          <ListItemContainer
-            style={{
-              paddingBlock: 0,
-              paddingInline: 0,
-            }}
-          >
-            <ListItemElementDropArea
-              direction={direction}
-              style={{
-                position: 'absolute',
-                width: active[2],
-                height: active[3],
-                animation: 'none',
-              }}
-            />
-          </ListItemContainer>
         )
       }
       <ListItemElement
@@ -173,42 +144,47 @@ const _ListItem: React.FC<ListItemProps & LongTouchable> = React.memo(function L
             ];
           }
         }}
-        // onMouseDown={handleMouseDown}
-        // onTouchStart={handleTouchStart}
-        // onMouseMove={handleMouseMove}
-        // onTouchMove={handleTouchMove}
+        onMouseDown={handleMouseDown}
+        onTouchStart={handleTouchStart}
+        onMouseMove={handleMouseMove}
+        onTouchMove={handleTouchMove}
         isDragging={dragging}
         style={{
           left: dragging ? active[0] : undefined,
           top: dragging ? active[1] : undefined,
-          transform: canReplace ? 'rotate(110deg)' : undefined,
+          filter: canReplace ? 'grayscale(50%) brightness(50%)' : undefined,
           pointerEvents: dropReady ? 'none' : undefined,
           userSelect: dropReady ? 'none' : undefined,
           opacity: canReplace ? 0.75 : undefined,
         }}
       >
-        <DragIcon
-          size={20}
-          x={4}
-          y={4}
-          setDragging={d => {
-            if (dropReady) {
-              return;
-            }
-
-            if (d) {
-              if (!dragging) {
-                // 开始
-                onDragStart([d[0], d[1], bcrRef.current[2], bcrRef.current[3]]);
-              } else {
-                // 更新
-                onDrag([d[0], d[1], active[2], active[3]]);
-              }
-            } else {
-              onDragEnd();
-            }
-          }}
-        />
+        {
+          droppable !== 'none' && (
+            <DragIcon
+              size={24}
+              x={4}
+              y={4}
+              direction={direction}
+              setDragging={d => {
+                if (dropReady) {
+                  return;
+                }
+    
+                if (d) {
+                  if (!dragging) {
+                    // 开始
+                    onDragStart([d[0], d[1], bcrRef.current[2], bcrRef.current[3]]);
+                  } else {
+                    // 更新
+                    onDrag([d[0], d[1], active[2], active[3]]);
+                  }
+                } else {
+                  onDragEnd();
+                }
+              }}
+            />
+          )
+        }
         {children}
       </ListItemElement>
       {/* 拖拽终点检测 */}
@@ -222,7 +198,7 @@ const _ListItem: React.FC<ListItemProps & LongTouchable> = React.memo(function L
           >
             {/* 前方 */}
             {
-              ['all', 'insert'].includes(droppable) && (
+              droppable === 'insert' && (
                 <ListItemElementDroppable
                   onMouseOver={onCanDropBefore}
                   onTouchMove={onCanDropBefore}
@@ -231,7 +207,7 @@ const _ListItem: React.FC<ListItemProps & LongTouchable> = React.memo(function L
             }
             {/* 元素所在位置 */}
             {
-              ['all', 'replace'].includes(droppable) && (
+              droppable === 'replace' && (
                 <ListItemElementDroppable
                   onMouseOver={onCanDropReplace}
                   onTouchMove={onCanDropReplace}
@@ -243,7 +219,7 @@ const _ListItem: React.FC<ListItemProps & LongTouchable> = React.memo(function L
             }
             {/* 后方 */}
             {
-              ['all', 'insert'].includes(droppable) && (
+              droppable === 'insert' && (
                 <ListItemElementDroppable
                   onMouseOver={onCanDropAfter}
                   onTouchMove={onCanDropAfter}

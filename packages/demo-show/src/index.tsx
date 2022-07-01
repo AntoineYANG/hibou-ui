@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom/client';
 
 import App from '@views';
 
-import './index.scss';
+import './index.css';
 
 
 const container = document.getElementById('root');
